@@ -4,7 +4,9 @@ use std::env;
 use tokio_postgres::{Client, Error, NoTls};
 
 pub struct DBClient {
-    client: Client,
+    pub client: Client,
+    host: String,
+    user: String,
 }
 
 impl DBClient {
@@ -22,16 +24,19 @@ impl DBClient {
         );
 
         let (client, connection) = tokio_postgres::connect(&connection_string, NoTls).await?;
-
         tokio::spawn(connection);
 
-        Ok(DBClient { client })
+        Ok(DBClient {
+            client,
+            host: db_host,
+            user: db_user,
+        })
     }
 
     pub async fn get_database_count(&self) -> Result<i64, Error> {
         let rows = self
             .client
-            .query("SELECT COUNT(*) FROM pg_databases;", &[])
+            .query("SELECT COUNT(*) FROM pg_catalog.pg_database;", &[])
             .await?;
         let count: i64 = rows[0].get(0);
 
@@ -41,7 +46,7 @@ impl DBClient {
     pub async fn list_databases(&self) -> Result<Vec<String>, Error> {
         let rows = self
             .client
-            .query("SELECT datname FROM pg_databases;", &[])
+            .query("SELECT datname FROM pg_catalog.pg_database;", &[])
             .await?;
         let databases: Vec<String> = rows.iter().map(|row| row.get(0)).collect();
 
@@ -53,6 +58,7 @@ impl DBClient {
             .execute(&format!("CREATE DATABASE {}", db_name), &[])
             .await?;
 
+        println!("Base de datos '{}' creada con éxito!", db_name);
         Ok(())
     }
 
@@ -64,16 +70,29 @@ impl DBClient {
             )
             .await?;
 
+        println!("Operación realizada con éxito!");
         Ok(())
     }
 
-    pub async fn drop_database(&self, db_name: &str) -> Result<(), Error> {
-        let input = input(format!("¿Estás seguro que deseas eliminar la base de datos '{}'? Escribe 'yes' para confirmar:", db_name).as_str());
+    pub async fn drop_database(&self, db_name: &str, confirm: bool) -> Result<(), Error> {
+        let input = match confirm {
+            false => {
+                input(format!("¿Estás seguro que deseas eliminar la base de datos '{}'? Escribe 'yes' para confirmar:", db_name).as_str())
+            }
+            true => "yes".to_string()
+        };
         let input = input.trim();
 
         if input == "yes" {
+            let _ = self
+            .client
+            .execute(
+                &format!("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '{}' AND pid <> pg_backend_pid();", db_name),
+                &[]
+            ).await?;
+
             self.client
-                .execute(&format!("DROP DATABASE IF EXITS {}", db_name), &[])
+                .execute(&format!("DROP DATABASE IF EXISTS {}", db_name), &[])
                 .await?;
             println!(
                 "La base de datos '{}' ha sido eliminada correctamente.",
@@ -84,5 +103,13 @@ impl DBClient {
         }
 
         Ok(())
+    }
+
+    pub fn host(&self) -> String {
+        return self.host.clone();
+    }
+
+    pub fn user(&self) -> String {
+        return self.user.clone();
     }
 }
