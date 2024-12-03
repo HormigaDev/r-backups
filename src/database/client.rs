@@ -1,4 +1,5 @@
 use bbel_common::terminal::input;
+use colored::*;
 use dotenv::dotenv;
 use std::env;
 use tokio_postgres::{Client, Error, NoTls};
@@ -58,7 +59,7 @@ impl DBClient {
             .execute(&format!("CREATE DATABASE {}", db_name), &[])
             .await?;
 
-        println!("Base de datos '{}' creada con éxito!", db_name);
+        println!("Database '{}' created successfully!", db_name.green());
         Ok(())
     }
 
@@ -70,16 +71,20 @@ impl DBClient {
             )
             .await?;
 
-        println!("Operación realizada con éxito!");
+        println!("{}", "Operation completed successfully!".green());
         Ok(())
     }
 
     pub async fn drop_database(&self, db_name: &str, confirm: bool) -> Result<(), Error> {
         let input = match confirm {
-            false => {
-                input(format!("¿Estás seguro que deseas eliminar la base de datos '{}'? Escribe 'yes' para confirmar:", db_name).as_str())
-            }
-            true => "yes".to_string()
+            false => input(
+                &format!(
+                    "Are you sure you want to drop the database '{}'? Type 'yes' to confirm:",
+                    db_name.yellow()
+                )
+                .as_str(),
+            ),
+            true => "yes".to_string(),
         };
         let input = input.trim();
 
@@ -95,11 +100,14 @@ impl DBClient {
                 .execute(&format!("DROP DATABASE IF EXISTS {}", db_name), &[])
                 .await?;
             println!(
-                "La base de datos '{}' ha sido eliminada correctamente.",
-                db_name
+                "The database '{}' has been dropped successfully.",
+                db_name.green()
             );
         } else {
-            println!("Operación cancelada. No se ha eliminado la base de datos.");
+            println!(
+                "{}",
+                "Operation canceled. The database was not dropped.".yellow()
+            );
         }
 
         Ok(())
