@@ -1,4 +1,5 @@
 use super::client::DBClient;
+use colored::*;
 use std::env;
 use std::process::Command;
 use tokio_postgres::Error;
@@ -18,18 +19,19 @@ pub async fn create(db: &DBClient, db_name: &str) -> Result<(), Error> {
         .arg(&backup_file)
         .arg(db_name)
         .output()
-        .expect("Error al ejecutar pg_dump");
+        .expect(&format!("{}", "Error executing pg_dump".red()));
 
     if !output.status.success() {
         eprintln!(
-            "Error al crear el backup: {}",
+            "{} {}",
+            "Error creating the backup:".red(),
             String::from_utf8_lossy(&output.stderr)
         );
     }
 
     println!(
-        "Backup de la base de datos '{}' creado exitosamente",
-        db_name
+        "Backup of the database '{}' created successfully",
+        db_name.green()
     );
     Ok(())
 }
