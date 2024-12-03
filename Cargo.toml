@@ -1,0 +1,14 @@
+[package]
+name = "r-backups"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = "3.0"
+dotenv = "0.15"
+tokio = { version = "1", features = ["full"] }
+tokio-postgres = "0.7"
+postgres = "0.19"
+log = "0.4"
+simplelog = "0.11"
+bbel-common = "0.1.0"
