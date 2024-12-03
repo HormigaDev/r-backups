@@ -2,20 +2,22 @@ services:
     r-backups:
         container_name: r-backups
         build:
-            context: ./r-backups
+            context: .
         environment:
             DATABASE_HOST: bbel-postgres
-            DATABASE_USER: bbel_user
+            DATABASE_USER: bbel_postgres
             DATABASE_PASSWORD: bbel_4dm1n
             DATABASE_NAME: bbel_postgres
         volumes:
             - ./backups:/backups
+            - .:/app
         depends_on:
             - bbel-postgres
         stdin_open: true
         tty: true
         networks:
             - shared-network
+        restart: always
 
     bbel-postgres:
         container_name: bbel-postgres
@@ -37,18 +39,21 @@ services:
         restart: always
         image: dpage/pgadmin4
         environment:
-            PGADMIN_DEFAULT_EMAIL: admin@bbel.local
+            PGADMIN_DEFAULT_EMAIL: admin@admin.com
             PGADMIN_DEFAULT_PASSWORD: bbel_4dm1n
         ports:
-            - "5757:80"
+            - "7070:80"
         extra_hosts:
-            - "bbel.localhost:127.0.0.1"
+            - "pgadmin2.localhost:127.0.0.1"
         depends_on:
             - bbel-postgres
         networks:
             - shared-network
+        volumes:
+            - pgadmin_data:/var/lib/pgadmin
 volumes:
     postgres_data:
+    pgadmin_data:
 
 networks:
     shared-network:

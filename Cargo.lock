@@ -599,6 +599,7 @@ dependencies = [
  "bbel-common",
  "clap",
  "dotenv",
+ "futures-util",
  "log",
  "postgres",
  "simplelog",
