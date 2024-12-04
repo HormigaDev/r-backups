@@ -4,10 +4,10 @@ services:
         build:
             context: .
         environment:
-            DATABASE_HOST: bbel-postgres
-            DATABASE_USER: bbel_postgres
-            DATABASE_PASSWORD: bbel_4dm1n
-            DATABASE_NAME: bbel_postgres
+            DATABASE_HOST: ${DATABASE_HOST}
+            DATABASE_USER: ${DATABASE_USER}
+            DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+            DATABASE_NAME: ${DATABASE_NAME}
         volumes:
             - ./backups:/backups
             - .:/app
@@ -24,9 +24,9 @@ services:
         restart: always
         image: postgres:15
         environment:
-            POSTGRES_USER: bbel_postgres
-            POSTGRES_PASSWORD: bbel_4dm1n
-            POSTGRES_DB: bbel_postgres
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB}
         ports:
             - "5435:5432"
         volumes:
@@ -39,8 +39,8 @@ services:
         restart: always
         image: dpage/pgadmin4
         environment:
-            PGADMIN_DEFAULT_EMAIL: admin@admin.com
-            PGADMIN_DEFAULT_PASSWORD: bbel_4dm1n
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
         ports:
             - "7070:80"
         extra_hosts:
@@ -51,6 +51,7 @@ services:
             - shared-network
         volumes:
             - pgadmin_data:/var/lib/pgadmin
+
 volumes:
     postgres_data:
     pgadmin_data:

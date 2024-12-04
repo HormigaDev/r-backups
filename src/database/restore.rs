@@ -4,10 +4,10 @@ use std::process::Command;
 use tokio_postgres::Error;
 
 pub async fn one(db: &DBClient, db_name: &str, backup_file: &str) -> Result<(), Error> {
-    let db_password = std::env::var("DATABASE_PASSWORD").unwrap_or_else(|_| "postgres".to_string());
+    let db_password = DBClient::get_env("password");
 
     db.drop_database(db_name, true).await?;
-    db.create_database(db_name).await?;
+    db.create_database(db_name, "", true).await?;
 
     // Ejecutar el comando pg_restore
     let output = Command::new("pg_restore")
