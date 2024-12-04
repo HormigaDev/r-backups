@@ -8,7 +8,11 @@ pub mod cli {
             (
                 "createdb",
                 "Create a new database",
-                vec![("name", 'n', true, true)],
+                vec![
+                    ("name", 'n', true, true),
+                    ("sql", 's', true, false),
+                    ("delete", 'd', false, false),
+                ],
             ),
             ("list", "List all databases", vec![]),
             (

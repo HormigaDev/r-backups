@@ -1,11 +1,10 @@
 use super::client::DBClient;
 use colored::*;
-use std::env;
 use std::process::Command;
 use tokio_postgres::Error;
 
 pub async fn create(db: &DBClient, db_name: &str) -> Result<(), Error> {
-    let db_password = env::var("DATABASE_PASSWORD").unwrap_or_else(|_| "postgres".to_string());
+    let db_password = DBClient::get_env("password");
     let backup_file = format!("backups/{}.backup.sql", db_name);
     let output = Command::new("pg_dump")
         .env("PGPASSWORD", db_password)

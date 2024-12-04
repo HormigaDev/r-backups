@@ -11,18 +11,59 @@ pub struct DBClient {
 }
 
 impl DBClient {
-    pub async fn connect() -> Result<DBClient, Error> {
-        dotenv().ok();
-
+    pub fn get_env(key: &str) -> String {
         let db_host = env::var("DATABASE_HOST").unwrap_or_else(|_| "localhost".to_string());
         let db_user = env::var("DATABASE_USER").unwrap_or_else(|_| "postgres".to_string());
         let db_password = env::var("DATABASE_PASSWORD").unwrap_or_else(|_| "postgres".to_string());
         let db_name = env::var("DATABASE_NAME").unwrap_or_else(|_| "postgres".to_string());
 
+        let env_value = match key {
+            "host" => db_host,
+            "user" => db_user,
+            "password" => db_password,
+            "rootdbname" => db_name,
+            _ => String::new(),
+        };
+
+        return env_value;
+    }
+    pub fn get_connection_string(db_name: &str) -> String {
+        let db_host = DBClient::get_env("host");
+        let db_user = DBClient::get_env("user");
+        let db_password = DBClient::get_env("password");
+
         let connection_string = format!(
             "host={} user={} password={} dbname={}",
             db_host, db_user, db_password, db_name
         );
+
+        return connection_string;
+    }
+
+    pub async fn get_db_connection(&self, db_name: &str) -> Result<DBClient, Error> {
+        let db_host = DBClient::get_env("host");
+        let db_user = DBClient::get_env("user");
+
+        let connection_string = DBClient::get_connection_string(db_name);
+        let (client, connection) = tokio_postgres::connect(&connection_string, NoTls).await?;
+
+        tokio::spawn(connection);
+
+        Ok(DBClient {
+            client,
+            host: db_host,
+            user: db_user,
+        })
+    }
+
+    pub async fn connect() -> Result<DBClient, Error> {
+        dotenv().ok();
+
+        let db_host = DBClient::get_env("host");
+        let db_user = DBClient::get_env("user");
+        let db_name = DBClient::get_env("rootdbname");
+
+        let connection_string = DBClient::get_connection_string(&db_name);
 
         let (client, connection) = tokio_postgres::connect(&connection_string, NoTls).await?;
         tokio::spawn(connection);
@@ -54,10 +95,64 @@ impl DBClient {
         Ok(databases)
     }
 
-    pub async fn create_database(&self, db_name: &str) -> Result<(), Error> {
+    async fn database_exists(&self, db_name: &str) -> bool {
+        let connection_string = DBClient::get_connection_string("bbel_postgres");
+        let (client, connection) = tokio_postgres::connect(&connection_string, NoTls)
+            .await
+            .expect(&format!("{}", "Error connecting to the database".red()));
+        tokio::spawn(connection);
+
+        // Ejecutar la consulta para verificar si la base de datos existe
+        let rows = client
+            .query(
+                "SELECT 1 FROM pg_catalog.pg_database WHERE datname = $1;",
+                &[&db_name],
+            )
+            .await
+            .expect(&format!(
+                "{}",
+                "Error checking if the database exists".red()
+            ));
+
+        return !rows.is_empty();
+    }
+
+    pub async fn create_database(
+        &self,
+        db_name: &str,
+        sql_file_path: &str,
+        deletedb: bool,
+    ) -> Result<(), Error> {
+        let exists = self.database_exists(db_name).await;
+
+        if exists && deletedb {
+            self.drop_database(db_name, true).await?;
+        }
+
         self.client
             .execute(&format!("CREATE DATABASE {}", db_name), &[])
             .await?;
+
+        if !sql_file_path.is_empty() {
+            let clientdb = self.get_db_connection(db_name).await?;
+            match std::fs::read_to_string(sql_file_path) {
+                Ok(sql) => match clientdb.client.execute(&sql, &[]).await {
+                    Ok(_) => {
+                        println!(
+                            "SQL file from '{}' executed sucessfully on database '{}'.",
+                            sql_file_path.green(),
+                            db_name.green()
+                        )
+                    }
+                    Err(e) => {
+                        eprintln!("{}", format!("Error executing SQL file: {}", e).red())
+                    }
+                },
+                Err(e) => {
+                    eprintln!("{}", format!("Error reading SQL file: {}", e).red());
+                }
+            }
+        }
 
         println!("Database '{}' created successfully!", db_name.green());
         Ok(())

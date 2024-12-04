@@ -50,9 +50,11 @@ async fn main() {
     match matches.subcommand() {
         Some(("createdb", sub_matches)) => {
             let db_name = sub_matches.value_of("name").unwrap();
+            let sql_file_path = sub_matches.value_of("sql").unwrap();
+            let deletedb = sub_matches.is_present("delete");
             let msg = format!("Creating database {}...", db_name.green());
             println!("{}", msg.bright_blue());
-            if let Err(e) = db.create_database(db_name).await {
+            if let Err(e) = db.create_database(db_name, sql_file_path, deletedb).await {
                 let err = format!("Error creating the database: {}", e);
                 eprintln!("{}", err.red());
             }
