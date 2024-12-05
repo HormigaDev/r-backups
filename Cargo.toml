@@ -3,6 +3,16 @@ name = "r-backups"
 version = "0.1.0"
 edition = "2021"
 
+authors = ["HormigaDev <hormigadev7@gmail.com>"]
+description = "Tool for managing databases and backups"
+homepage = "https://github.com/HormigaDev/r-backups"
+repository = "https://github.com/HormigaDev/r-backups"
+documentation = "https://docs.rs/r-backups"
+readme = "README.md"
+license = "MIT"
+keywords = ["CLI",  "automation", "configuration", "commands", "database"]
+categories = ["command-line-utilities"]
+
 [dependencies]
 clap = "3.0"
 dotenv = "0.15"
@@ -14,3 +24,5 @@ simplelog = "0.11"
 bbel-common = "0.1.0"
 futures-util = "0.3"
 colored = "2.0"
+serde = { version = "1.0", features = ["derive"]}
+serde_json = "1.0"

@@ -1,0 +1,1 @@
+select config_value from configurations where config_key = $1;
