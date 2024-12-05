@@ -1,15 +1,26 @@
 use super::client::DBClient;
 use colored::*;
-use std::process::Command;
+use std::process::{self, Command};
 use tokio_postgres::Error;
 
 pub async fn create(db: &DBClient, db_name: &str) -> Result<(), Error> {
+    let backups_dir = DBClient::get_config("backups").await;
+    if backups_dir.is_empty() {
+        eprintln!("{}", "Backup directory is not defined".red());
+        eprintln!(
+            "{}",
+            "Use r-backups config --key (-k) backups --value (-v) path/to/backups_dir/".yellow()
+        );
+        process::exit(1);
+    }
     let db_password = DBClient::get_env("password");
-    let backup_file = format!("backups/{}.backup.sql", db_name);
-    let output = Command::new("pg_dump")
+    let backup_file = format!("{}{}.backup.sql", backups_dir, db_name);
+    let output = match Command::new("pg_dump")
         .env("PGPASSWORD", db_password)
         .arg("-h")
         .arg(&db.host())
+        .arg("-p")
+        .arg(DBClient::get_env("dbport"))
         .arg("-U")
         .arg(&db.user())
         .arg("-F")
@@ -18,7 +29,13 @@ pub async fn create(db: &DBClient, db_name: &str) -> Result<(), Error> {
         .arg(&backup_file)
         .arg(db_name)
         .output()
-        .expect(&format!("{}", "Error executing pg_dump".red()));
+    {
+        Ok(value) => value,
+        Err(e) => {
+            eprintln!("{} {}", "Error executing pg_dump:".red(), e);
+            process::exit(1);
+        }
+    };
 
     if !output.status.success() {
         eprintln!(
@@ -26,6 +43,7 @@ pub async fn create(db: &DBClient, db_name: &str) -> Result<(), Error> {
             "Error creating the backup:".red(),
             String::from_utf8_lossy(&output.stderr)
         );
+        process::exit(1);
     }
 
     println!(

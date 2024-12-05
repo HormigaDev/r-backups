@@ -1,0 +1,1 @@
+delete from migrations where db_name = $1 and db_version = $2;
