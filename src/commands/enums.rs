@@ -8,7 +8,6 @@ pub enum Command {
     Backup,
     Restore,
     Init,
-    Config,
     Migration,
     Update,
 }
@@ -24,7 +23,6 @@ impl Command {
             "backup" => Some(Command::Backup),
             "restore" => Some(Command::Restore),
             "init" => Some(Command::Init),
-            "config" => Some(Command::Config),
             "migration" => Some(Command::Migration),
             "update" => Some(Command::Update),
             _ => None,

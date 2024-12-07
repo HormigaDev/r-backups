@@ -1,9 +1,14 @@
+use super::super::{files, vars};
 use crate::database::client::DBClient;
 use colored::*;
 use std::process;
 
 pub async fn execute(db: &DBClient) {
     const INIT_SQL: &str = include_str!("../sql/init.sql");
+
+    files::create_dir_if_not_exists(&vars::get_migrations_dir());
+    files::create_dir_if_not_exists(&vars::get_backups_dir());
+    files::create_chagelog_file(&vars::get_chagelog_file_path());
 
     let check_table_query = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'configurations');";
     let mut table_config_exists: bool = true;
@@ -42,8 +47,8 @@ pub async fn execute(db: &DBClient) {
     }
 
     let query = INIT_SQL
-        .replace("$password", &DBClient::get_env("clidbpassword"))
-        .replace("$cli_user", &DBClient::get_env("cliuser"));
+        .replace("$password", &vars::get_password())
+        .replace("$cli_user", &vars::get_user());
 
     match db.client.batch_execute(&query).await {
         Ok(_) => {

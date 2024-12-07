@@ -1,5 +1,6 @@
 use clap::{App, Arg, Command};
 use database::client::DBClient;
+use dotenv::dotenv;
 
 mod database {
     pub mod backup;
@@ -11,14 +12,17 @@ mod database {
 
 mod commands;
 mod config;
+mod files;
 mod handler;
+mod vars;
 
 #[tokio::main]
 async fn main() {
-    let db = DBClient::connect().await;
+    dotenv().ok();
+    let db = DBClient::get_cli_connection().await;
 
     let mut matches = App::new("r-backups")
-        .version("0.1.0")
+        .version("0.1.1")
         .author("HormigaDev <hormigadev7@gmail.com>")
         .about("Tool for managing databases and backups");
 

@@ -53,14 +53,6 @@ pub mod cli {
                 vec![],
             ),
             (
-                "config",
-                "This command sets the CLI configurations.",
-                vec![
-                    ("key", 'k', OPTIONAL, TAKES),
-                    ("value", 'v', OPTIONAL, TAKES),
-                ],
-            ),
-            (
                 "migration",
                 "This command executes, reverts, or generates a migration.",
                 vec![

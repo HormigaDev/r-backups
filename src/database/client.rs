@@ -1,8 +1,8 @@
+use super::super::vars;
 use bbel_common::terminal::input;
 use colored::*;
-use dotenv::dotenv;
 use postgres::types::ToSql;
-use std::{env, process};
+use std::process;
 use tokio_postgres::{Client, Error, NoTls};
 
 pub struct DBClient {
@@ -13,34 +13,11 @@ pub struct DBClient {
 }
 
 impl DBClient {
-    pub fn get_env(key: &str) -> String {
-        dotenv().ok();
-        let db_host = env::var("DATABASE_HOST").unwrap_or_else(|_| "localhost".to_string());
-        let db_user = env::var("DATABASE_USER").unwrap_or_else(|_| "postgres".to_string());
-        let db_password = env::var("DATABASE_PASSWORD").unwrap_or_else(|_| "postgres".to_string());
-        let db_name = env::var("DATABASE_NAME").unwrap_or_else(|_| "postgres".to_string());
-        let cli_db_password =
-            env::var("CLI_DB_PASSWORD").unwrap_or_else(|_| "db_password".to_string());
-        let cli_user = env::var("CLI_USER").unwrap_or_else(|_| "user".to_string());
-        let db_port = env::var("DATABASE_PORT").unwrap_or_else(|_| "5432".to_string());
-
-        match key {
-            "host" => db_host,
-            "user" => db_user,
-            "password" => db_password,
-            "rootdbname" => db_name,
-            "clidbpassword" => cli_db_password,
-            "cliuser" => cli_user,
-            "dbport" => db_port,
-            _ => String::new(),
-        }
-    }
-
     fn get_connection_string(db_name: &str) -> String {
-        let db_host = DBClient::get_env("host");
-        let db_user = DBClient::get_env("user");
-        let db_password = DBClient::get_env("password");
-        let db_port = DBClient::get_env("dbport");
+        let db_host = vars::get_host();
+        let db_user = vars::get_user();
+        let db_password = vars::get_password();
+        let db_port = vars::get_port();
 
         format!(
             "host={} user={} password={} dbname={} port={}",
@@ -49,8 +26,8 @@ impl DBClient {
     }
 
     pub async fn get_db_connection(db_name: &str) -> DBClient {
-        let db_host = DBClient::get_env("host");
-        let db_user = DBClient::get_env("user");
+        let db_host = vars::get_host();
+        let db_user = vars::get_user();
 
         let connection_string = DBClient::get_connection_string(db_name);
         let (client, connection) = match tokio_postgres::connect(&connection_string, NoTls).await {
@@ -76,24 +53,12 @@ impl DBClient {
         }
     }
 
-    fn get_cli_connection_string(db_name: &str) -> String {
-        let db_host = DBClient::get_env("host");
-        let db_user = DBClient::get_env("cliuser");
-        let db_password = DBClient::get_env("clidbpassword");
-        let db_port = DBClient::get_env("dbport");
-
-        format!(
-            "host={} user={} password={} dbname={} port={}",
-            db_host, db_user, db_password, db_name, db_port
-        )
-    }
-
     pub async fn get_cli_connection() -> DBClient {
-        let db_host = DBClient::get_env("host");
-        let db_user = DBClient::get_env("cliuser");
-        let db_name = DBClient::get_env("rootdbname");
+        let db_host = vars::get_host();
+        let db_user = vars::get_user();
+        let db_name = vars::get_dbroot_name();
 
-        let connection_string = DBClient::get_cli_connection_string(&db_name);
+        let connection_string = DBClient::get_connection_string(&db_name);
 
         let (client, connection) = match tokio_postgres::connect(&connection_string, NoTls).await {
             Ok(value) => value,
@@ -108,30 +73,6 @@ impl DBClient {
             }
         };
 
-        tokio::spawn(connection);
-
-        DBClient {
-            client,
-            host: db_host,
-            user: db_user,
-            name: db_name,
-        }
-    }
-
-    pub async fn connect() -> DBClient {
-        let db_host = DBClient::get_env("host");
-        let db_user = DBClient::get_env("user");
-        let db_name = DBClient::get_env("rootdbname");
-
-        let connection_string = DBClient::get_connection_string(&db_name);
-
-        let (client, connection) = match tokio_postgres::connect(&connection_string, NoTls).await {
-            Ok(value) => value,
-            Err(e) => {
-                eprintln!("{} {}", "Error connecting to the database:".red(), e);
-                process::exit(1);
-            }
-        };
         tokio::spawn(connection);
 
         DBClient {
@@ -369,32 +310,6 @@ impl DBClient {
 
     pub fn user(&self) -> String {
         return self.user.clone();
-    }
-
-    pub async fn get_config(config_key: &str) -> String {
-        const SQL_GET_CONFIG: &str = include_str!("../sql/get_config.sql");
-
-        let clidb = DBClient::get_cli_connection().await;
-
-        let params: [&(dyn ToSql + Sync); 1] = [&config_key];
-
-        let row = match clidb.client.query_opt(SQL_GET_CONFIG, &params).await {
-            Ok(Some(row)) => row,
-            Ok(None) => {
-                eprintln!(
-                    "{} {}",
-                    "Configuration key not found:".red(),
-                    config_key.yellow()
-                );
-                return "".to_string();
-            }
-            Err(e) => {
-                eprintln!("{} {}", "Error getting configuration:".red(), e);
-                process::exit(1);
-            }
-        };
-
-        row.get("config_value")
     }
 
     pub fn get_name(&self) -> String {

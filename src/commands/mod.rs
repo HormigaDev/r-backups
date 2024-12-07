@@ -1,5 +1,4 @@
 mod backup;
-mod config;
 mod count;
 mod createdb;
 mod drop;
@@ -13,7 +12,6 @@ mod update;
 pub mod enums;
 
 pub use backup::execute as backup;
-pub use config::execute as config;
 pub use count::execute as count;
 pub use createdb::execute as createdb;
 pub use drop::execute as drop;
