@@ -68,20 +68,16 @@ DATABASE_USER=<usuario>
 DATABASE_PASSWORD=<contraseña>
 DATABASE_NAME=<nombre de la base de datos>
 DATABASE_PORT=<puerto>
-CLI_DB_PASSWORD=<usuario> # El mismo usuario que en DATABASE_USER
-CLI_USER=<contraseña> # La misma contraseña que en DATABASE_PASSWORD
+BACKUPS_DIR=ruta/al/directorio_de_backups/
+MIGRATIONS_DIR=ruta/al/directorio_de_migraciones/
+CHANGELOG_FILE_PATH=ruta/al/chagelog
 ```
 
 ### Configuración inicial para usar el CLI correctamente
 
 ```bash
 r-backups init
-r-backups config --key migrations --value ruta/al/directorio_de_migraciones/
-r-backups config --key changelog --value ruta/al/archivo_chagelog
-r-backups config --key backups --value ruta/al/directorio_de_backups/
 ```
-
-Estos comandos establecen las configuraciones iniciales del directorio de migraciones, el archivo changelog donde se almacenan los metadatos de las migraciones y el directorio de backups respectivamente.
 
 Nota:
 

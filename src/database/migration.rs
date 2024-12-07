@@ -1,4 +1,5 @@
 use super::client::DBClient;
+use crate::vars;
 use colored::*;
 use postgres::types::ToSql;
 use serde::{Deserialize, Serialize};
@@ -112,7 +113,7 @@ pub async fn execute(option: &str, id: String, db: &DBClient, log: bool, updates
     const UP_MIGRATION_SQL: &str = include_str!("../sql/up_migration.sql");
     const DOWN_MIGRATION_SQL: &str = include_str!("../sql/down_migration.sql");
 
-    let migrations_dir = DBClient::get_config("migrations").await;
+    let migrations_dir = vars::get_migrations_dir();
     if migrations_dir.is_empty() {
         eprintln!("{}", "The migrations dir is not configured.".red());
         eprintln!(
@@ -262,8 +263,8 @@ pub async fn execute(option: &str, id: String, db: &DBClient, log: bool, updates
 }
 
 pub async fn generate(db_group: &str, name: &str) {
-    let changelog_dir = DBClient::get_config("changelog").await;
-    let migrations_dir = DBClient::get_config("migrations").await;
+    let changelog_dir = vars::get_chagelog_file_path();
+    let migrations_dir = vars::get_migrations_dir();
     if changelog_dir.is_empty() {
         eprintln!("{}", "Changelog dir is not configured".red());
         eprintln!(

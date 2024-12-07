@@ -33,9 +33,6 @@ pub async fn execute(db: DBClient, matches: ArgMatches) {
             Some(Command::Init) => {
                 commands::init(&db).await;
             }
-            Some(Command::Config) => {
-                commands::config(sub_matches).await;
-            }
             Some(Command::Migration) => {
                 commands::migration(sub_matches, &db).await;
             }

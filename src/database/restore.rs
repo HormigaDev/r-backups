@@ -1,3 +1,4 @@
+use super::super::vars;
 use super::client::DBClient;
 use colored::*;
 use std::{
@@ -7,7 +8,7 @@ use std::{
 use tokio_postgres::Error;
 
 pub async fn one(db: &DBClient, db_name: &str, backup_file: &str) -> Result<(), Error> {
-    let db_password = DBClient::get_env("password");
+    let db_password = vars::get_password();
 
     let file = Path::new(backup_file);
 
@@ -28,7 +29,7 @@ pub async fn one(db: &DBClient, db_name: &str, backup_file: &str) -> Result<(), 
         .arg("-h")
         .arg(&db.host())
         .arg("-p")
-        .arg(DBClient::get_env("dbport")) // Dirección del host
+        .arg(vars::get_port()) // Dirección del host
         .arg("-U")
         .arg(&db.user()) // Usuario de la base de datos
         .arg("-d")

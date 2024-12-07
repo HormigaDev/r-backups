@@ -1,10 +1,11 @@
+use crate::vars;
 use std::process;
 
 use super::client::DBClient;
 use colored::*;
 
 pub async fn apply(db_group: &str, db_name: &str, clidb: &DBClient) {
-    let path = DBClient::get_config("changelog").await;
+    let path = vars::get_chagelog_file_path();
     let changelog = super::migration::read_changelog(path);
     let mut updates: i64 = 0;
     if !db_group.is_empty() {
@@ -46,7 +47,7 @@ pub async fn apply(db_group: &str, db_name: &str, clidb: &DBClient) {
 }
 
 pub async fn rollback(db_group: &str, db_name: &str, clidb: &DBClient) {
-    let path = DBClient::get_config("changelog").await;
+    let path = vars::get_chagelog_file_path();
     let mut changelog = super::migration::read_changelog(path);
     let mut updates: i64 = 0;
     if !db_group.is_empty() {
