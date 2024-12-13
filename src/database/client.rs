@@ -177,7 +177,7 @@ impl DBClient {
         if !sql_file_path.is_empty() {
             let clientdb = DBClient::get_db_connection(db_name).await;
             match std::fs::read_to_string(sql_file_path) {
-                Ok(sql) => match clientdb.client.execute(&sql, &[]).await {
+                Ok(sql) => match clientdb.client.batch_execute(&sql).await {
                     Ok(_) => {
                         println!(
                             "SQL file from '{}' executed sucessfully on database '{}'.",
