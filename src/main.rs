@@ -18,10 +18,10 @@ mod vars;
 
 #[tokio::main]
 async fn main() {
-    let current_dir = env::current_dir().expect("Unable to get current directory");
-
-    dotenv::from_path(current_dir.join(".env")).ok();
-
+    let file_path = env::current_dir()
+        .expect("Unable to get current directory")
+        .join(".r-backups");
+    config::cli::load_config(&file_path.display().to_string());
     let db = DBClient::get_cli_connection().await;
 
     let mut matches = App::new("r-backups")

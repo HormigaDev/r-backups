@@ -1,4 +1,19 @@
+use colored::*;
+use lazy_static::lazy_static;
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+use std::process::exit;
+use std::sync::Mutex;
+
 pub mod cli {
+    use super::*;
+
+    // Variable global que almacenará la configuración cargada desde el archivo
+    lazy_static! {
+        static ref CONFIG: Mutex<HashMap<String, String>> = Mutex::new(HashMap::new());
+    }
+
     pub fn get_options() -> Vec<(
         &'static str,
         &'static str,
@@ -75,5 +90,55 @@ pub mod cli {
                 ],
             ),
         ]
+    }
+
+    pub fn load_config(file_path: &str) {
+        let mut config_map = HashMap::new();
+
+        let file = File::open(file_path).unwrap_or_else(|_| {
+            eprintln!(
+                "{}",
+                format!("Failed to open config file: {}", file_path.yellow()).red()
+            );
+            exit(1);
+        });
+
+        let reader = BufReader::new(file);
+
+        for line in reader.lines() {
+            let line = line.unwrap();
+
+            if line.trim().is_empty() || line.trim().starts_with('#') {
+                continue;
+            }
+
+            if let Some((key, value)) = line.split_once('=') {
+                config_map.insert(key.trim().to_string(), value.trim().to_string());
+            } else {
+                eprintln!(
+                    "{}",
+                    format!("Invalid line in config file: {}", line.yellow()).red()
+                );
+                exit(1);
+            }
+        }
+
+        // Guardar la configuración en la variable global
+        let mut config = CONFIG.lock().unwrap();
+        *config = config_map;
+    }
+
+    pub fn get_value(key: &str) -> String {
+        let config = CONFIG.lock().unwrap();
+        config
+            .get(key)
+            .unwrap_or_else(|| {
+                eprintln!(
+                    "{}",
+                    format!("Missing required key: {}", key.yellow()).red()
+                );
+                exit(1);
+            })
+            .to_string()
     }
 }

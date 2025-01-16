@@ -60,7 +60,7 @@ r-backups [opciones] [argumentos]
 
 ## Configuración
 
-Para que el CLI funcione correctamente, debes tener las siguientes variables de entorno configuradas en un archivo `.env` en el directorio donde usarás el CLI o en las variables de entorno del sistema.
+Para que el CLI funcione correctamente, debes tener las siguientes variables de entorno configuradas en un archivo `.r-backups` en el directorio donde usarás el CLI o en las variables de entorno del sistema.
 
 ```ini
 DATABASE_HOST=<host>
