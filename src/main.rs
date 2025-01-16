@@ -1,6 +1,6 @@
 use clap::{App, Arg, Command};
 use database::client::DBClient;
-use dotenv::dotenv;
+use std::env;
 
 mod database {
     pub mod backup;
@@ -18,11 +18,14 @@ mod vars;
 
 #[tokio::main]
 async fn main() {
-    dotenv().ok();
+    let current_dir = env::current_dir().expect("Unable to get current directory");
+
+    dotenv::from_path(current_dir.join(".env")).ok();
+
     let db = DBClient::get_cli_connection().await;
 
     let mut matches = App::new("r-backups")
-        .version("0.1.2")
+        .version("0.1.3")
         .author("HormigaDev <hormigadev7@gmail.com>")
         .about("Tool for managing databases and backups");
 
