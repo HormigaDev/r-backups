@@ -1,0 +1,10 @@
+{
+    "host": "localhost",
+    "user": "postgres",
+    "password": "password",
+    "database_name": "bbel_postgres",
+    "port": 5432,
+    "backups_dir": "~/.r-backups/backups/",
+    "migrations_dir": "~/.r-backups/migrations/",
+    "changelogs_dir": "~/.r-backups/changelogs/"
+}

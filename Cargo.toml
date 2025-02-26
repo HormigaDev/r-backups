@@ -1,0 +1,29 @@
+[package]
+name = "r-backups"
+version = "0.2.0"
+edition = "2021"
+
+authors = ["HormigaDev <hormigadev7@gmail.com>"]
+description = "Tool for managing databases and backups"
+homepage = "https://github.com/HormigaDev/r-backups"
+repository = "https://github.com/HormigaDev/r-backups"
+documentation = "https://docs.rs/r-backups"
+readme = "README.md"
+license = "MIT"
+keywords = ["CLI",  "automation", "configuration", "commands", "database"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+colored = "2.0"
+clap = "3.0"
+dotenv = "0.15"
+tokio = { version = "1", features = ["full"] }
+tokio-postgres = "0.7"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = "0.4"
+tokio-process = "0.2"
+
+[[bin]]
+name = "rbk"
+path = "src/main.rs"
