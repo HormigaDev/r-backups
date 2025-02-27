@@ -68,6 +68,7 @@ pub mod cli {
                     ("migration", 'm', REQUIRED, TAKES),
                 ],
             ),
+            ("list", "Lista todas las bases de datos presentes", vec![]),
         ]
     }
 }

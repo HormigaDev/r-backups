@@ -1,6 +1,6 @@
 [package]
 name = "r-backups"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 
 authors = ["HormigaDev <hormigadev7@gmail.com>"]
@@ -25,5 +25,5 @@ chrono = "0.4"
 tokio-process = "0.2"
 
 [[bin]]
-name = "rbk"
+name = "r-backups"
 path = "src/main.rs"

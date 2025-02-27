@@ -73,6 +73,9 @@ pub async fn execute(matches: ArgMatches) {
 
             commands::migration_down(migration_id, dbname, groupdb).await;
         }
+        Some(("list", _)) => {
+            commands::list().await;
+        }
         _ => {
             eprintln!("{}", "Comando desconocido o no soportado.".red());
             std::process::exit(1);
