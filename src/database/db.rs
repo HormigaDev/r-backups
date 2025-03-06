@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::{config::Config, utils::get_rbackups_dir};
 use chrono::Utc;
 use colored::*;
 use std::process::{exit, Command};
@@ -60,7 +60,8 @@ impl DBClient {
 
     pub async fn backup(&self) {
         let config = Config::app_config();
-        let backups_dir = &config.backups_dir;
+        let rbackups_dir = get_rbackups_dir();
+        let backups_dir = &config.backups_dir.replace("$APP", &rbackups_dir);
 
         let timestamp = Utc::now().format("%Y-%m-%d_%H-%M-%S").to_string();
         let backup_filename = format!(

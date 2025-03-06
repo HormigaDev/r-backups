@@ -5,13 +5,20 @@ use std::{fs, process::exit};
 
 use crate::config::Config;
 
-pub fn create_r_backups_folder() {
-    let home_dir = env::var("HOME").unwrap_or_else(|_| {
+pub fn get_home_dir() -> String {
+    env::var("HOME").unwrap_or_else(|_| {
         eprintln!("No se pudo obtener el directorio HOME.");
         exit(1);
-    });
+    })
+}
 
-    let folder_path = format!("{}/.r-backups", home_dir);
+pub fn get_rbackups_dir() -> String {
+    let home_dir = get_home_dir();
+    format!("{}/.r-backups", home_dir)
+}
+
+pub fn create_r_backups_folder() {
+    let folder_path = get_rbackups_dir();
     let path = Path::new(&folder_path);
 
     if !path.exists() {
