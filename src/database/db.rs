@@ -39,7 +39,6 @@ impl DBClient {
         tokio::spawn(async move {
             if let Err(err) = connection.await {
                 eprintln!("{}: {}", "Fallo en la conexión".red(), err);
-                exit(1);
             }
         });
 
