@@ -69,6 +69,14 @@ pub mod cli {
                 ],
             ),
             ("list", "Lista todas las bases de datos presentes", vec![]),
+            (
+                "execute",
+                "Ejecuta un script sql en una base de datos específicada.",
+                vec![
+                    ("database", 'd', REQUIRED, TAKES),
+                    ("file", 'f', REQUIRED, TAKES),
+                ],
+            ),
         ]
     }
 }

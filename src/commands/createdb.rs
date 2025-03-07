@@ -35,18 +35,38 @@ pub async fn create_database(name: &str, file_path: &str) {
 
         let new_db = DBClient::from_db(name).await;
 
-        new_db
-            .client
-            .batch_execute(&sql_content)
-            .await
-            .unwrap_or_else(|error| {
+        if let Err(error) = new_db.client.batch_execute(&sql_content).await {
+            eprintln!(
+                "{}: {}",
+                "Error al ejecutar script en la base de datos".red(),
+                error
+            );
+
+            // Intentar eliminar la base de datos si el script falla
+            let drop_query = format!("DROP DATABASE {}", name);
+            if let Err(drop_error) = db.client.execute(&drop_query, &[]).await {
                 eprintln!(
                     "{}: {}",
-                    "Error al ejecutar script en la base de datos".red(),
-                    error
+                    format!(
+                        "Error al eliminar la base de datos {} después del fallo",
+                        name.yellow()
+                    )
+                    .red(),
+                    drop_error
                 );
-                exit(1);
-            });
+            } else {
+                println!(
+                    "{}",
+                    format!(
+                        "Base de datos {} eliminada debido al error en el script",
+                        name.yellow()
+                    )
+                    .green()
+                );
+            }
+
+            exit(1);
+        }
 
         println!(
             "{}",

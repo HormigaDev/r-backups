@@ -76,6 +76,15 @@ pub async fn execute(matches: ArgMatches) {
         Some(("list", _)) => {
             commands::list().await;
         }
+        Some(("execute", sub_matches)) => {
+            let dbname = sub_matches.value_of("database").unwrap_or_else(|| {
+                eprintln!("El nombre de la base de datos es necesario");
+                exit(1);
+            });
+            let file_path = sub_matches.value_of("file").unwrap_or_else(|| "");
+
+            commands::execute(dbname, file_path).await;
+        }
         _ => {
             eprintln!("{}", "Comando desconocido o no soportado.".red());
             std::process::exit(1);
