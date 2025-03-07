@@ -42,7 +42,35 @@ pub async fn create_database(name: &str, file_path: &str) {
                 error
             );
 
-            // Intentar eliminar la base de datos si el script falla
+            // **Terminar todas las conexiones activas a la base de datos**
+            let terminate_connections = format!(
+                "SELECT pg_terminate_backend(pg_stat_activity.pid) \
+                FROM pg_stat_activity WHERE datname = '{}' AND pid <> pg_backend_pid();",
+                name
+            );
+
+            if let Err(term_error) = db.client.execute(&terminate_connections, &[]).await {
+                eprintln!(
+                    "{}: {}",
+                    format!(
+                        "Error al cerrar conexiones activas en la base de datos {}",
+                        name.yellow()
+                    )
+                    .red(),
+                    term_error
+                );
+            } else {
+                println!(
+                    "{}",
+                    format!(
+                        "Conexiones activas a {} terminadas antes de eliminarla",
+                        name.yellow()
+                    )
+                    .green()
+                );
+            }
+
+            // **Eliminar la base de datos**
             let drop_query = format!("DROP DATABASE {}", name);
             if let Err(drop_error) = db.client.execute(&drop_query, &[]).await {
                 eprintln!(

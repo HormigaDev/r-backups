@@ -11,7 +11,7 @@ mod utils;
 async fn main() {
     dotenv().ok();
     let mut matches = App::new("r-backups")
-        .version("0.2.4")
+        .version("0.2.5")
         .author("HormigaDev <hormigadev7@gmail.com>")
         .about("Interfaz de línea de comandos para gestionar bases de datos y migraciones.");
 
