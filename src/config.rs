@@ -100,26 +100,28 @@ impl Config {
             exit(1);
         }
 
-        let file_content = fs::read_to_string(path).unwrap_or_else(|_| {
+        let file_content = fs::read_to_string(path).unwrap_or_else(|error| {
             eprintln!(
-                "{}",
+                "{}: {}",
                 format!(
                     "ERROR: No se pudo leer el archivo de configuración {}",
                     path.yellow()
                 )
-                .red()
+                .red(),
+                error
             );
             exit(1);
         });
 
-        serde_json::from_str(&file_content).unwrap_or_else(|_| {
+        serde_json::from_str(&file_content).unwrap_or_else(|error| {
             eprintln!(
-                "{}",
+                "{}: {}",
                 format!(
                     "ERROR: Formato inválido en el archivo de configuración {}",
                     path.yellow()
                 )
-                .red()
+                .red(),
+                error
             );
             exit(1);
         })

@@ -27,8 +27,12 @@ impl DBClient {
 
         let (client, connection) = tokio_postgres::connect(&conn_str, NoTls)
             .await
-            .unwrap_or_else(|_| {
-                eprintln!("{}", "Error al conectar a la base de datos".red());
+            .unwrap_or_else(|error| {
+                eprintln!(
+                    "{}: {}",
+                    "Error al conectar a la base de datos".red(),
+                    error
+                );
                 exit(1);
             });
 
@@ -48,8 +52,12 @@ impl DBClient {
     pub async fn list_databases(&self) -> Vec<String> {
         let query = "SELECT datname FROM pg_database WHERE datistemplate = false";
 
-        let rows = self.client.query(query, &[]).await.unwrap_or_else(|_| {
-            eprintln!("{}", "Error al obtener la lista de bases de datos".red());
+        let rows = self.client.query(query, &[]).await.unwrap_or_else(|error| {
+            eprintln!(
+                "{}: {}",
+                "Error al obtener la lista de bases de datos".red(),
+                error
+            );
             exit(1);
         });
 
@@ -86,8 +94,8 @@ impl DBClient {
             .arg(&backup_filename)
             .env("PGPASSWORD", &config.password)
             .output()
-            .unwrap_or_else(|_| {
-                eprintln!("{}", "Error al realizar el backup".red());
+            .unwrap_or_else(|error| {
+                eprintln!("{}: {}", "Error al realizar el backup".red(), error);
                 exit(1);
             });
 

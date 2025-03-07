@@ -6,13 +6,17 @@ pub async fn create_database(name: &str, file_path: &str) {
     let db = DBClient::from_db("").await;
 
     let query = format!("CREATE DATABASE {}", name);
-    db.client.execute(&query, &[]).await.unwrap_or_else(|_| {
-        eprintln!(
-            "{}",
-            format!("Error al crear la base de datos {}", name.yellow()).red()
-        );
-        exit(1);
-    });
+    db.client
+        .execute(&query, &[])
+        .await
+        .unwrap_or_else(|error| {
+            eprintln!(
+                "{}: {}",
+                format!("Error al crear la base de datos {}", name.yellow()).red(),
+                error
+            );
+            exit(1);
+        });
 
     println!(
         "{}",
@@ -20,10 +24,11 @@ pub async fn create_database(name: &str, file_path: &str) {
     );
 
     if !file_path.is_empty() {
-        let sql_content = fs::read_to_string(file_path).unwrap_or_else(|_| {
+        let sql_content = fs::read_to_string(file_path).unwrap_or_else(|error| {
             eprintln!(
-                "{}",
-                format!("Error al leer el archivo {}", file_path.yellow()).red()
+                "{}: {}",
+                format!("Error al leer el archivo {}", file_path.yellow()).red(),
+                error
             );
             exit(1);
         });
@@ -34,8 +39,12 @@ pub async fn create_database(name: &str, file_path: &str) {
             .client
             .batch_execute(&sql_content)
             .await
-            .unwrap_or_else(|_| {
-                eprintln!("{}", "Error al ejecutar script en la base de datos".red());
+            .unwrap_or_else(|error| {
+                eprintln!(
+                    "{}: {}",
+                    "Error al ejecutar script en la base de datos".red(),
+                    error
+                );
                 exit(1);
             });
 

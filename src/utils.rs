@@ -6,8 +6,8 @@ use std::{fs, process::exit};
 use crate::config::Config;
 
 pub fn get_home_dir() -> String {
-    env::var("HOME").unwrap_or_else(|_| {
-        eprintln!("No se pudo obtener el directorio HOME.");
+    env::var("HOME").unwrap_or_else(|error| {
+        eprintln!("No se pudo obtener el directorio HOME: {}", error);
         exit(1);
     })
 }
@@ -22,10 +22,11 @@ pub fn create_r_backups_folder() {
     let path = Path::new(&folder_path);
 
     if !path.exists() {
-        fs::create_dir_all(path).unwrap_or_else(|_| {
+        fs::create_dir_all(path).unwrap_or_else(|error| {
             eprintln!(
-                "{}",
-                format!("Error al crear la carpeta {}", folder_path.yellow()).red()
+                "{}: {}",
+                format!("Error al crear la carpeta {}", folder_path.yellow()).red(),
+                error
             );
             exit(1);
         });
@@ -64,8 +65,12 @@ pub fn extract_migration_section(content: &str, up: bool) -> String {
 }
 
 pub fn read_applied_changelog(name: &str) -> Vec<String> {
-    let home_dir = env::var("HOME").unwrap_or_else(|_| {
-        eprintln!("{}", "Error al obtener el directorio HOME.".red());
+    let home_dir = env::var("HOME").unwrap_or_else(|error| {
+        eprintln!(
+            "{}: {}",
+            "Error al obtener el directorio HOME.".red(),
+            error
+        );
         exit(1);
     });
 
@@ -97,30 +102,36 @@ pub fn read_applied_changelog(name: &str) -> Vec<String> {
         return Vec::new();
     }
 
-    let content = fs::read_to_string(path).unwrap_or_else(|_| {
+    let content = fs::read_to_string(path).unwrap_or_else(|error| {
         eprintln!(
-            "{}",
-            format!("Error al leer el archivo {}", changelog_path.yellow()).red()
+            "{}: {}",
+            format!("Error al leer el archivo {}", changelog_path.yellow()).red(),
+            error
         );
         exit(1);
     });
 
-    serde_json::from_str::<Vec<String>>(&content).unwrap_or_else(|_| {
+    serde_json::from_str::<Vec<String>>(&content).unwrap_or_else(|error| {
         eprintln!(
-            "{}",
+            "{}: {}",
             format!(
                 "El archivo {} está en un formato inválido, debe ser un array de strings",
                 changelog_path.yellow()
             )
-            .red()
+            .red(),
+            error
         );
         exit(1);
     })
 }
 
 pub fn write_applied_changelog(name: &str, content: Vec<String>) {
-    let home_dir = env::var("HOME").unwrap_or_else(|_| {
-        eprintln!("{}", "Error al obtener el directorio HOME.".red());
+    let home_dir = env::var("HOME").unwrap_or_else(|error| {
+        eprintln!(
+            "{}: {}",
+            "Error al obtener el directorio HOME.".red(),
+            error
+        );
         exit(1);
     });
 
@@ -140,14 +151,15 @@ pub fn write_applied_changelog(name: &str, content: Vec<String>) {
         }
     }
 
-    let content_json = serde_json::to_string(&content).unwrap_or_else(|_| {
+    let content_json = serde_json::to_string(&content).unwrap_or_else(|error| {
         eprintln!(
-            "{}",
+            "{}: {}",
             format!(
                 "Error al serializar el contenido para el archivo {}",
                 changelog_path.yellow()
             )
-            .red()
+            .red(),
+            error
         );
         exit(1);
     });
@@ -179,16 +191,17 @@ pub fn read_changelog(name: &str) -> Vec<String> {
         exit(1);
     }
 
-    let content = fs::read_to_string(path).unwrap_or_else(|_| {
+    let content = fs::read_to_string(path).unwrap_or_else(|error| {
         eprintln!(
-            "{}",
-            format!("Error al leer el chagelog {}", log_path.yellow()).red()
+            "{}: {}",
+            format!("Error al leer el chagelog {}", log_path.yellow()).red(),
+            error
         );
         exit(1);
     });
 
-    serde_json::from_str::<Vec<String>>(&content).unwrap_or_else(|_| {
-        eprintln!("{}", "Error al convertir el changelog".red());
+    serde_json::from_str::<Vec<String>>(&content).unwrap_or_else(|error| {
+        eprintln!("{}: {}", "Error al convertir el changelog".red(), error);
         exit(1);
     })
 }
@@ -216,14 +229,15 @@ pub fn write_changelog(name: &str, content: Vec<String>) {
         }
     }
 
-    let content_json = serde_json::to_string(&content).unwrap_or_else(|_| {
+    let content_json = serde_json::to_string(&content).unwrap_or_else(|error| {
         eprintln!(
-            "{}",
+            "{}: {}",
             format!(
                 "Error al serializar el contenido para {}",
                 log_path.yellow()
             )
-            .red()
+            .red(),
+            error
         );
         exit(1);
     });
@@ -257,10 +271,11 @@ pub fn read_migration_file(name: &str) -> String {
         exit(1);
     }
 
-    fs::read_to_string(path).unwrap_or_else(|_| {
+    fs::read_to_string(path).unwrap_or_else(|error| {
         eprintln!(
-            "{}",
-            format!("Error al leer el archivo {}", full_path.yellow()).red()
+            "{}: {}",
+            format!("Error al leer el archivo {}", full_path.yellow()).red(),
+            error
         );
         exit(1);
     })
