@@ -180,7 +180,7 @@ pub fn write_applied_changelog(name: &str, content: Vec<String>) {
 
 pub fn read_changelog(name: &str) -> Vec<String> {
     let config = Config::app_config();
-    let log_path = format!("{}/{}_change.log", config.changelogs_dir, name);
+    let log_path = format!("{}/{}.changelog", config.changelogs_dir, name);
 
     let path = Path::new(&log_path);
     if !path.exists() {
@@ -208,7 +208,7 @@ pub fn read_changelog(name: &str) -> Vec<String> {
 
 pub fn write_changelog(name: &str, content: Vec<String>) {
     let config = Config::app_config();
-    let log_path = format!("{}/{}_change.log", config.changelogs_dir, name);
+    let log_path = format!("{}/{}.changelog", config.changelogs_dir, name);
 
     let path = Path::new(&log_path);
 
